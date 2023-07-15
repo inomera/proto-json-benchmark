@@ -1,0 +1,87 @@
+plugins {
+    id 'java'
+    id "me.champeau.jmh" version "0.7.0"
+}
+
+group = 'com.inomera.benchmark.serde'
+version = '0.0.1'
+sourceCompatibility = JavaVersion.VERSION_17
+
+println "Project: ${group}:${name}:${version}"
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://nexus.telco.inomera.com/repository/turkcell/"
+        credentials {
+            username 'turkcell-readonly'
+            password '1d236121c8olp28a428a553615495931'
+        }
+    }
+}
+
+
+configurations {
+
+}
+
+dependencies {
+    // domain
+    implementation 'com.inomera.echo.domain:domain:1.2.6'
+
+    // json
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+
+    // protobuf
+    implementation 'com.google.protobuf:protobuf-javalite:3.22.2'
+    implementation 'com.googlecode.protobuf-java-format:protobuf-java-format:1.4'
+    implementation 'com.google.protobuf:protobuf-java-util:3.22.2'
+
+    // benchmark
+    jmh 'org.openjdk.jmh:jmh-core:1.36'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
+
+    // this is the line that solves the missing /META-INF/BenchmarkList error
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
+
+    // test libs
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+}
+
+test {
+    useJUnitPlatform()
+
+    testLogging {
+        // set options for log level LIFECYCLE
+        events "FAILED"
+        exceptionFormat "short"
+
+        // set options for log level DEBUG
+        debug {
+            events "started", "SKIPPED", "FAILED"
+            exceptionFormat "full"
+        }
+
+        // remove standard output/error logging from --info builds
+        // by assigning only 'failed' and 'skipped' events
+        info.events = ["FAILED", "SKIPPED"]
+    }
+}
+
+compileJava {
+    options.compilerArgs += ['-parameters', '-Xlint:deprecation', '-Xlint:unchecked']
+}
+
+compileTestJava {
+    options.compilerArgs += ['-parameters', '-Xlint:deprecation', '-Xlint:unchecked']
+}
